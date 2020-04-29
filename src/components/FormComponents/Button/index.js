@@ -3,7 +3,7 @@ import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { getStyles } from "../dragStyles";
 
-const Button = ({ editMode, id, attributes, ...data }) => {
+const Button = ({ editMode, id, attributes, removeComponent, ...data }) => {
   const [{ isDragging }, drag, preview] = useDrag({
     item: { id, attributes, ...data },
     collect: (monitor) => ({
@@ -15,14 +15,12 @@ const Button = ({ editMode, id, attributes, ...data }) => {
   }, []);
 
   return (
-    <button
+    <div
       ref={drag}
-      type="button"
-      class="btn btn-primary"
       {...(editMode
         ? {
             style: {
-              width: "10rem",
+              width: "20rem",
               ...getStyles(
                 attributes.styleObj.left ? attributes.styleObj.left : 0,
                 attributes.styleObj.top ? attributes.styleObj.top : 0,
@@ -33,12 +31,14 @@ const Button = ({ editMode, id, attributes, ...data }) => {
           }
         : {
             style: {
-              width: "10rem",
+              width: "20rem",
             },
           })}
     >
-      {attributes.value}
-    </button>
+      <button type="button" class="btn btn-primary">
+        {attributes.value}
+      </button>
+    </div>
   );
 };
 

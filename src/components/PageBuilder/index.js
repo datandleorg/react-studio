@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer, useRef } from "react";
 import styled from "styled-components";
 import { componentsMeta } from "../data/componentMeta";
 import Element from "./Element";
@@ -30,20 +30,24 @@ const DraggableList = styled.ul`
 const PageContainer = styled.div`
   position: relative;
   height: 86vh;
-  padding: 0.5rem;
   overflow-y: scroll;
+  padding: 0.5rem;
   border: 2px dashed #ccc;
   border-radius: 0.3rem;
   background: ${(props) => (props.isOverCurrent ? "#f2f2f2" : "initial")};
 `;
 
 const PageBuilder = () => {
+  //using localStorage as persistent data
   const [localData, setLocalData] = useLocalStorage("pageData", {});
   const [pageData, setPageData] = useState({ ...localData });
 
   useEffect(() => {
+    //update local storage whenever there is a change in html
     setLocalData({ ...pageData });
   }, [pageData]);
+
+  const dropTargetRef = useRef();
 
   const [{ isOverCurrent }, drop] = useDrop({
     accept: ["formElement", "htmlElement", "textElement"],
@@ -57,20 +61,18 @@ const PageBuilder = () => {
         (ele.attributes.styleObj.top ? ele.attributes.styleObj.top : 0) + delta.y
       );
 
-      //if element lready exists
+      //if element is new
       if (ele.id === undefined) {
         ele.id = uuidv4();
-
-        setPageData({ ...pageData, [ele.id]: ele });
       } else {
+        //if element already exists
         ele.attributes.styleObj = {
           position: "absolute",
           left,
           top,
         };
-        console.log(ele.attributes.styleObj);
-        setPageData({ ...pageData, [ele.id]: ele });
       }
+      setPageData({ ...pageData, [ele.id]: ele });
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -79,16 +81,33 @@ const PageBuilder = () => {
     }),
   });
 
-  const renderEle = (ele) => {
-    let Component = require(`../FormComponents/${ele.path}`).default;
-    return <Component editMode={true} {...ele} />;
+  const removeComponent = (id) => {
+    let pageDataCopy = deepCopy(pageData);
+    delete pageDataCopy[id];
+    setPageData(pageDataCopy);
   };
+
+  const renderEle = (ele, index) => {
+    let Component = require(`../FormComponents/${ele.path}`).default;
+    return (
+      <Component
+        removeComponent={(id) => {
+          removeComponent(id);
+        }}
+        index={index}
+        editMode={true}
+        {...ele}
+      />
+    );
+  };
+
+  drop(dropTargetRef);
 
   return (
     <>
       <div className="container-fluid">
         <div className="row">
-          <div className="col-2 border bg-white shadow-sm" style={{ height: "90vh" }}>
+          <div className="col-2 border bg-white shadow-sm">
             <DraggableList>
               {componentsMeta.map((c, idx) => {
                 return <Element data={c} key={`Ele${idx}`} />;
@@ -111,11 +130,11 @@ const PageBuilder = () => {
                 <i className="fa fa-trash mr-1"></i> Clear
               </div>
             </div>
-            <PageContainer ref={drop} isOverCurrent={isOverCurrent}>
+            <PageContainer ref={dropTargetRef} isOverCurrent={isOverCurrent}>
               <DragLayer />
               {Object.keys(pageData).length > 0 &&
-                Object.values(pageData).map((ele) => {
-                  return renderEle(ele);
+                Object.values(pageData).map((ele, eidx) => {
+                  return renderEle(ele, eidx);
                 })}
             </PageContainer>
           </div>

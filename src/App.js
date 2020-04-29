@@ -1,8 +1,9 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import PageBuilderContainer from "./containers/PageBuilderContainer";
 import Header from "./components/Header";
 import "./App.css";
+
+const PageBuilderContainer = React.lazy(() => import("./containers/PageBuilderContainer"));
 
 function App() {
   return (
@@ -10,11 +11,11 @@ function App() {
       {/* added router just in case */}
       <Header />
       <Router>
-        <Switch>
-          <Route exact path="/">
-            <PageBuilderContainer />
-          </Route>
-        </Switch>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Switch>
+            <Route exact path="/" component={PageBuilderContainer}></Route>
+          </Switch>
+        </Suspense>
       </Router>
     </div>
   );

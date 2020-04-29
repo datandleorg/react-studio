@@ -3,7 +3,7 @@ import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { getStyles } from "../dragStyles";
 
-const Select = ({ editMode, id, attributes, ...data }) => {
+const Select = ({ editMode, id, attributes, removeComponent, ...data }) => {
   const [{ isDragging }, drag, preview] = useDrag({
     item: { id, attributes, ...data },
     collect: (monitor) => ({
@@ -19,7 +19,7 @@ const Select = ({ editMode, id, attributes, ...data }) => {
       <div
         class="form-group"
         ref={drag}
-        class="form-group bg-white shadow-sm p-2 border pointer"
+        class="form-group bg-white shadow-sm p-2 border pointer component"
         {...(editMode
           ? {
               style: {
@@ -38,6 +38,9 @@ const Select = ({ editMode, id, attributes, ...data }) => {
               },
             })}
       >
+        {editMode && (
+          <i className="fa fa-trash float-right" onClick={() => removeComponent(id)}></i>
+        )}
         <label for="">{attributes.label}</label>
         <select class="form-control" name="" id="">
           {attributes.options.map((o) => {

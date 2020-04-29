@@ -8,7 +8,7 @@ const TextEle = styled.h1`
   color: #333;
 `;
 
-const Text = ({ editMode, id, attributes, ...data }) => {
+const Text = ({ editMode, id, attributes, removeComponent, ...data }) => {
   const [{ isDragging }, drag, preview] = useDrag({
     item: { id, attributes, ...data },
     collect: (monitor) => ({
@@ -21,31 +21,29 @@ const Text = ({ editMode, id, attributes, ...data }) => {
   }, []);
 
   return (
-    <>
-      <TextEle
-        as={attributes.tag}
-        ref={drag}
-        {...(editMode
-          ? {
-              style: {
-                width: "20rem",
-                ...getStyles(
-                  attributes.styleObj.left ? attributes.styleObj.left : 0,
-                  attributes.styleObj.top ? attributes.styleObj.top : 0,
-                  isDragging,
-                  attributes.styleObj.position
-                ),
-              },
-            }
-          : {
-              style: {
-                width: "20rem",
-              },
-            })}
-      >
-        {attributes.value}
-      </TextEle>
-    </>
+    <div
+      ref={drag}
+      {...(editMode
+        ? {
+            style: {
+              width: "20rem",
+              ...getStyles(
+                attributes.styleObj.left ? attributes.styleObj.left : 0,
+                attributes.styleObj.top ? attributes.styleObj.top : 0,
+                isDragging,
+                attributes.styleObj.position
+              ),
+            },
+          }
+        : {
+            style: {
+              width: "20rem",
+            },
+          })}
+    >
+      {editMode && <i className="fa fa-trash float-right" onClick={() => removeComponent(id)}></i>}
+      <TextEle as={attributes.tag}>{attributes.value}</TextEle>
+    </div>
   );
 };
 
