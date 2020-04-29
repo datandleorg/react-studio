@@ -49,28 +49,28 @@ const PageBuilder = () => {
     accept: ["formElement", "htmlElement", "textElement"],
     drop(item, monitor) {
       let ele = deepCopy(item);
-      let delta = monitor.getClientOffset();
-      let initialOffset = monitor.getInitialSourceClientOffset();
-      let finalPos = { left: delta.x - initialOffset.x, top: delta.y - initialOffset.y };
+      let delta = monitor.getDifferenceFromInitialOffset();
+      let left = Math.round(
+        (ele.attributes.styleObj.left ? ele.attributes.styleObj.left : 0) + delta.x
+      );
+      let top = Math.round(
+        (ele.attributes.styleObj.top ? ele.attributes.styleObj.top : 0) + delta.y
+      );
 
-      console.table({
-        initialOffset: monitor.getInitialSourceClientOffset(),
-        currentOffset: monitor.getSourceClientOffset(),
-        pointerOffset: monitor.getClientOffset(),
-      });
-
-      console.log(ele, ele.id, "test");
       //if element lready exists
       if (ele.id === undefined) {
         ele.id = uuidv4();
+
+        setPageData({ ...pageData, [ele.id]: ele });
       } else {
         ele.attributes.styleObj = {
           position: "absolute",
-          ...finalPos,
+          left,
+          top,
         };
+        console.log(ele.attributes.styleObj);
+        setPageData({ ...pageData, [ele.id]: ele });
       }
-
-      setPageData({ ...pageData, [ele.id]: ele });
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -80,7 +80,6 @@ const PageBuilder = () => {
   });
 
   const renderEle = (ele) => {
-    console.log(ele, "test");
     let Component = require(`../FormComponents/${ele.path}`).default;
     return <Component editMode={true} {...ele} />;
   };
